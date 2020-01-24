@@ -4,7 +4,7 @@ from twilio.twiml.messaging_response import MessagingResponse
 from twilio.rest import Client
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
-import random, string
+import random, string, os, json
 
 app = Flask(__name__, static_url_path='')
 api = Api(app)
@@ -131,6 +131,21 @@ def match_sentence(sentence, match_inp):
     for word in sentence.split():
         if word.lower() in match_inp:
             return True
+def ner_process(sentence):
+    open('commands/_i', 'w').close()
+    f = open("commands/_i", "a")
+    f.write(sentence)
+    f.close()
+    os.system('sh ./commands/ner_time.sh')
+    json_res = {}
+    with open('commands/_o') as fp:
+        line = fp.readline()
+        while line:
+                line = fp.readline()
+                line = line.replace('HTTP/1.1 200 OK', '')
+                if 'data' in line and 'null' not in line:
+                    json_res.update(json.loads(line))
+    return json_res
 
 @app.route('/data/<path:path>')
 def res(path):
@@ -234,11 +249,18 @@ def chat_reply():
                 else:
                     resp.message("*Here's the current report you requested-*\n" + msg)
             else:
-                resp.message("Here's the complete report you requested-\nhttps://care-wheel.herokuapp.com/user/" + user.username)
+                json_res = ner_process(raw)
+                present = False
+                for item in json_res['data']:
+                    present = True
+                    if item['entity_value']['value']:
+                        resp.message("Here's the report from " + str(item['entity_value']['value']) + "\nhttps://care-wheel.herokuapp.com/user/" + user.username)
+                if present is False:
+                    resp.message("Here's the complete report you requested-\nhttps://care-wheel.herokuapp.com/user/" + user.username)
         else:
             resp.message("Sorry you are not registered as anyone's guardian yet! Please install our mobile app to get started :)")
     else:
-        resp.message("I'm sorry! I don't understand you")
+        resp.message("I'm sorry! I couldn't get that")
 
     return str(resp)
 

@@ -1,3 +1,5 @@
 env/
 external/
+commands/_o
+commands/_i
 *.pyc
