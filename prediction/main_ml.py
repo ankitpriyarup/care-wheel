@@ -33,7 +33,8 @@ def get_inputs():
     zip_ref.close()
 
     data = {}
-    list_files = [f for f in listdir("data/set-a") if isfile(join("data/set-a", f))]
+    list_files = [f for f in listdir(
+        "data/set-a") if isfile(join("data/set-a", f))]
 
     for f in list_files:
         df = pd.read_csv(join("data/set-a", f))
@@ -64,13 +65,14 @@ def download():
         X.append(X_dict[patient_id])
         Y.append(Y_dict[patient_id])
 
-    print("Data for %s patients downloaded."%len(X))
+    print("Data for %s patients downloaded." % len(X))
     return X, Y
 
 
 def split(X, Y, proportion=0.75):
     idx = int(len(X)*proportion)
-    print("Dataset split in a training set of %s and testing set of %s patients."%(idx, len(X)-idx))
+    print("Dataset split in a training set of %s and testing set of %s patients." % (
+        idx, len(X)-idx))
     return X[:idx], Y[:idx], X[idx:], Y[idx:]
 
 
@@ -93,8 +95,9 @@ def lead_lag(mylist):
     return np.concatenate([leadlist, laglist], axis=1)
 
 
-def add_time(mylist, init_time = 0., total_time = 1.):
-    ans = [[init_time + xn * total_time/(len(mylist)-1)] + list(x) for (xn,x) in enumerate(mylist)]
+def add_time(mylist, init_time=0., total_time=1.):
+    ans = [[init_time + xn * total_time /
+            (len(mylist)-1)] + list(x) for (xn, x) in enumerate(mylist)]
     return np.array(ans)
 
 
@@ -130,12 +133,13 @@ def normalise(X):
 def evaluate(classifier, features, Y):
     THRESHOLD = .3
     predictions_proba = classifier.predict_proba(features)[:, 1]
-    predictions = [1. if pred>THRESHOLD else 0. for pred in predictions_proba]
+    predictions = [1. if pred >
+                   THRESHOLD else 0. for pred in predictions_proba]
     cm = confusion_matrix(Y, predictions)
     Se = cm[1, 1] / float(cm[1, 1] + cm[1, 0])
     P = cm[1, 1] / float(cm[1, 1] + cm[0, 1])
     score = min(Se, P)
-    print("Score of predictions: %s"%score)
+    print("Score of predictions: %s" % score)
 
 
 def to_path(df, dynamic_variables):
@@ -175,16 +179,16 @@ def reformat(X, static_variables, dynamic_variables):
 
 def st2si(order, stream):
     if order > 1:
-        return(tosig.stream2sig(stream , order))
+        return(tosig.stream2sig(stream, order))
     else:
         if order == 1:
-            return np.concatenate((np.array([1]), stream[-1] - stream[0]), axis = 0)
+            return np.concatenate((np.array([1]), stream[-1] - stream[0]), axis=0)
         else:
-            return np.array([1]);
+            return np.array([1])
 
 
 def compute(X, order=2):
-    func = partial(st2si,order)
+    func = partial(st2si, order)
     pool = Pool()
     n_samples = len(X)
     signatures = []
@@ -218,24 +222,28 @@ def predict(classifier, url):
     for patient_id in data:
         X.append(data[patient_id])
 
-    X = reformat(X, static_variables=["Age", "Gender"], dynamic_variables=["Creatinine", "Glucose"])
+    X = reformat(X, static_variables=["Age", "Gender"], dynamic_variables=[
+                 "Creatinine", "Glucose"])
     X = normalise(X)
     X = extract(X)
 
-    print('Predicted result: ' + classifier.predict(X))    # [0] means in-house dead [1] means in-house alive
+    # [0] means in-house dead [1] means in-house alive
+    print('Predicted result: ' + classifier.predict(X))
 
 
 if __name__ == "__main__":
     # DOWNLOAD & REFORMAT EVENT DATA, TRANSFORM TIME DEPENDENT VARIABLES
     X, Y = download()
-    X = reformat(X, static_variables=["Age", "Gender"], dynamic_variables=["Creatinine", "Glucose"])
+    X = reformat(X, static_variables=["Age", "Gender"], dynamic_variables=[
+                 "Creatinine", "Glucose"])
 
     # NORMALISE & EXTRACT FEATURES
     X = normalise(X)
     features = extract(X)
 
     # TRAIN THE MODEL BY SPLITING
-    features_train, Y_train, features_test, Y_test = split(features, Y, proportion = 0.75)
+    features_train, Y_train, features_test, Y_test = split(
+        features, Y, proportion=0.75)
     classifier = train(features_train, Y_train)
 
     predict(classifier, 'https://storage.googleapis.com/challenge-2012-1.0.0.physionet.org/set-a/132539.txt')

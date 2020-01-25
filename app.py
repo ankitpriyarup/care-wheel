@@ -4,9 +4,13 @@ from twilio.twiml.messaging_response import MessagingResponse
 from twilio.rest import Client
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
-from nltk.corpus import stopwords 
+from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
-import random, string, os, json, nltk
+import random
+import string
+import os
+import json
+import nltk
 
 # For first time run
 # nltk.download('stopwords')
@@ -17,7 +21,8 @@ account_sid = 'ACc81bc8dfc81a1536208ee34d767cf048'
 auth_token = 'bb411a9c5f6631634a342779b28cc612'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
 db = SQLAlchemy(app)
-client = Client(account_sid, auth_token) 
+client = Client(account_sid, auth_token)
+
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -32,10 +37,12 @@ class User(db.Model):
     mood = db.Column(db.Integer, unique=False, nullable=True, default=100)
     posts = db.relationship('Post', backref='author', lazy=True)
     parameters = db.relationship('Parameters', backref='author', lazy=True)
-    picture = db.Column(db.String(120), nullable=True, default='http://www.myiconfinder.com/icon/download/0cb3cbfc32eb4055b95b2f1c0ddd30ff-user.png')
+    picture = db.Column(db.String(120), nullable=True,
+                        default='http://www.myiconfinder.com/icon/download/0cb3cbfc32eb4055b95b2f1c0ddd30ff-user.png')
 
     def __repr__(self):
         return f"User('{self.username}', '{self.mobile}', '{self.publickey}')"
+
 
 class Supervisor(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -45,34 +52,41 @@ class Supervisor(db.Model):
     description = db.Column(db.String(256), unique=False, nullable=True)
     privatekey = db.Column(db.String(120), nullable=False)
     reviews = db.relationship('Review', backref='author', lazy=True)
-    picture = db.Column(db.String(120), nullable=True, default='http://www.myiconfinder.com/icon/download/0cb3cbfc32eb4055b95b2f1c0ddd30ff-user.png')
+    picture = db.Column(db.String(120), nullable=True,
+                        default='http://www.myiconfinder.com/icon/download/0cb3cbfc32eb4055b95b2f1c0ddd30ff-user.png')
     totalRate = db.Column(db.Float, nullable=True, default=5.0)
     totalCount = db.Column(db.Integer, nullable=True, default=1)
 
     def __repr__(self):
         return f"Supervisor('{self.username}')"
 
+
 class Review(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     rate = db.Column(db.Integer, nullable=False)
     title = db.Column(db.String(100), nullable=True)
-    date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    date_posted = db.Column(db.DateTime, nullable=False,
+                            default=datetime.utcnow)
     content = db.Column(db.Text, nullable=True)
-    supervisor_id = db.Column(db.Integer, db.ForeignKey('supervisor.id'), nullable=False)
+    supervisor_id = db.Column(db.Integer, db.ForeignKey(
+        'supervisor.id'), nullable=False)
 
     def __repr__(self):
         return f"Review('{self.title}', '{self.content}', '{self.date_posted}')"
 
+
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
-    date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    date_posted = db.Column(db.DateTime, nullable=False,
+                            default=datetime.utcnow)
     content = db.Column(db.Text, nullable=False)
     media = db.Column(db.Text, nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
     def __repr__(self):
         return f"Post('{self.title}', '{self.content}', '{self.date_posted}')"
+
 
 class Parameters(db.Model):
     p_albumin = db.Column(db.Float, unique=False, nullable=True, default=-1)
@@ -117,43 +131,58 @@ class Parameters(db.Model):
     p_long = db.Column(db.Float, unique=False, nullable=True, default=-1)
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    date_posted = db.Column(db.DateTime, nullable=False,
+                            default=datetime.utcnow)
 
     def __repr__(self):
         return f"Parameter('{self.user_id}', '{self.date_posted}')"
 
-GREETING_INPUTS = ("hello", "helloo", "hellooo", "helloooo", "hi", "hii", "hiii", "hiiii", "greetings", "sup", "what's up", "hey", "heyy", "heyyy", "heyyyy", "heyyyyy", "namaste", "hello ji")
-GREETING_RESPONSES = ["hi", "hey", "*nods*", "hi there", "hello", "I'm here to help"]
-COMMON_INPUTS = ("thanks", "thankss", "thanksss", "thankssss", "good", "goood", "gooood", "great", "perfect", "thank you", "thank youu", "thank youuu", "dhanyawaad", "shukriyaa")
+
+GREETING_INPUTS = ("hello", "helloo", "hellooo", "helloooo", "hi", "hii", "hiii", "hiiii", "greetings",
+                   "sup", "what's up", "hey", "heyy", "heyyy", "heyyyy", "heyyyyy", "namaste", "hello ji")
+GREETING_RESPONSES = ["hi", "hey", "*nods*",
+                      "hi there", "hello", "I'm here to help"]
+COMMON_INPUTS = ("thanks", "thankss", "thanksss", "thankssss", "good", "goood", "gooood",
+                 "great", "perfect", "thank you", "thank youu", "thank youuu", "dhanyawaad", "shukriyaa")
 COMMON_RESPONSES = [":)", "Glad to hear that!", ":D"]
 REPORT = ("show", "statistics", "data", "report", "analysis", "status")
-CURRENT = ("cur", "current", "recent", "now", "live", "abhi", "abhi", "turant wali", "turant", "eesi waqt")
+CURRENT = ("cur", "current", "recent", "now", "live", "abhi",
+           "abhi", "turant wali", "turant", "eesi waqt")
+
+
 def match_sentence_resp(sentence, match_inp, match_out):
     return random.choice(match_out)
+
 
 def match_sentence(sentence, match_inp):
     score = 0.0
     for word in match_inp:
         X_list = word_tokenize(sentence.lower())
         Y_list = word_tokenize(word.lower())
-        sw = stopwords.words('english')  
-        l1 =[];l2 =[]
+        sw = stopwords.words('english')
+        l1 = []
+        l2 = []
         X_set = {w for w in X_list if not w in sw}
         Y_set = {w for w in Y_list if not w in sw}
         rvector = X_set.union(Y_set)
         for w in rvector:
-            if w in X_set: l1.append(1)
-            else: l1.append(0)
-            if w in Y_set: l2.append(1)
-            else: l2.append(0)
+            if w in X_set:
+                l1.append(1)
+            else:
+                l1.append(0)
+            if w in Y_set:
+                l2.append(1)
+            else:
+                l2.append(0)
         c = 0
-        for i in range(len(rvector)): 
-            c+= l1[i]*l2[i] 
+        for i in range(len(rvector)):
+            c += l1[i]*l2[i]
         den = float((sum(l1)*sum(l2))**0.5)
         if den != 0:
             cosine = c / den
             score = score + cosine
     return score > 0.3
+
 
 def ner_process(sentence):
     open('commands/_i', 'w').close()
@@ -165,15 +194,17 @@ def ner_process(sentence):
     with open('commands/_o') as fp:
         line = fp.readline()
         while line:
-                line = fp.readline()
-                line = line.replace('HTTP/1.1 200 OK', '')
-                if 'data' in line and 'null' not in line:
-                    json_res.update(json.loads(line))
+            line = fp.readline()
+            line = line.replace('HTTP/1.1 200 OK', '')
+            if 'data' in line and 'null' not in line:
+                json_res.update(json.loads(line))
     return json_res
+
 
 @app.route('/data/<path:path>')
 def res(path):
     return send_from_directory('data', path)
+
 
 @app.route("/chat_reply", methods=['POST'])
 def chat_reply():
@@ -184,7 +215,8 @@ def chat_reply():
     raw = str(msg).lower()
 
     if (match_sentence(raw, GREETING_INPUTS)):
-        resp.message(match_sentence_resp(raw, GREETING_INPUTS, GREETING_RESPONSES))
+        resp.message(match_sentence_resp(
+            raw, GREETING_INPUTS, GREETING_RESPONSES))
     elif (match_sentence(raw, COMMON_INPUTS)):
         resp.message(match_sentence_resp(raw, COMMON_INPUTS, COMMON_RESPONSES))
     elif (match_sentence(raw, REPORT)):
@@ -196,23 +228,31 @@ def chat_reply():
                 if param.p_albumin != -1:
                     msg += 'Albumin: ' + str(param.p_albumin) + ' g/dL\n'
                 if param.p_alp != -1:
-                    msg += 'Alkaline Phosphate: ' + str(param.p_alp) + ' IU/L\n' 
+                    msg += 'Alkaline Phosphate: ' + \
+                        str(param.p_alp) + ' IU/L\n'
                 if param.p_alt != -1:
-                    msg += 'Alanine transaminase: ' + str(param.p_alt) + ' IU/L\n'
+                    msg += 'Alanine transaminase: ' + \
+                        str(param.p_alt) + ' IU/L\n'
                 if param.p_ast != -1:
-                    msg += 'Aspartate transaminase: ' + str(param.p_ast) + ' IU/L\n'
+                    msg += 'Aspartate transaminase: ' + \
+                        str(param.p_ast) + ' IU/L\n'
                 if param.p_bilirubin != -1:
                     msg += 'Bilirubin: ' + str(param.p_bilirubin) + ' mg/dL\n'
                 if param.p_bun != -1:
-                    msg += 'Blood Urea Nitrogen: ' + str(param.p_bun) + ' mg/dL\n'
+                    msg += 'Blood Urea Nitrogen: ' + \
+                        str(param.p_bun) + ' mg/dL\n'
                 if param.p_cholestrol != -1:
-                    msg += 'Cholestrol: ' + str(param.p_cholestrol) + ' mg/dL\n'
+                    msg += 'Cholestrol: ' + \
+                        str(param.p_cholestrol) + ' mg/dL\n'
                 if param.p_diasabp != -1:
-                    msg += 'Invasive diastolic arterial blood pressure: ' + str(param.p_diasabp) + ' mmHg\n'
+                    msg += 'Invasive diastolic arterial blood pressure: ' + \
+                        str(param.p_diasabp) + ' mmHg\n'
                 if param.p_fio2 != -1:
-                    msg += 'Fractional inspired O2: ' + str(param.p_fio2) + ' (0-1)\n'
+                    msg += 'Fractional inspired O2: ' + \
+                        str(param.p_fio2) + ' (0-1)\n'
                 if param.p_gcs != -1:
-                    msg += 'Glasgow Coma Score: ' + str(param.p_gcs) + ' (3-15)\n'
+                    msg += 'Glasgow Coma Score: ' + \
+                        str(param.p_gcs) + ' (3-15)\n'
                 if param.p_glucose != -1:
                     msg += 'Glucose: ' + str(param.p_glucose) + ' mg/dL\n'
                 if param.p_hco3 != -1:
@@ -230,29 +270,39 @@ def chat_reply():
                 if param.p_map != -1:
                     msg += 'MAP: ' + str(param.p_map) + ' mmHg\n'
                 if param.p_mechvent != -1:
-                    msg += 'Mechanical ventilation respiration: ' + str(param.p_mechvent) + ' (0:false, or 1:true)\n'
+                    msg += 'Mechanical ventilation respiration: ' + \
+                        str(param.p_mechvent) + ' (0:false, or 1:true)\n'
                 if param.p_na != -1:
                     msg += 'Sodium: ' + str(param.p_na) + ' mEq/L\n'
                 if param.p_nidiasabp != -1:
-                    msg += 'Non-invasive diastolic arterial blood pressure: ' + str(param.p_nidiasabp) + ' mmHg\n'
+                    msg += 'Non-invasive diastolic arterial blood pressure: ' + \
+                        str(param.p_nidiasabp) + ' mmHg\n'
                 if param.p_nimap != -1:
-                    msg += 'Non-invasive mean arterial blood pressure: ' + str(param.p_nimap) + ' mmHg\n'
+                    msg += 'Non-invasive mean arterial blood pressure: ' + \
+                        str(param.p_nimap) + ' mmHg\n'
                 if param.p_nisysabp != -1:
-                    msg += 'Non-invasive systolic arterial blood pressure: ' + str(param.p_nisysabp) + ' mmHg\n'
+                    msg += 'Non-invasive systolic arterial blood pressure: ' + \
+                        str(param.p_nisysabp) + ' mmHg\n'
                 if param.p_paco2 != -1:
-                    msg += 'partial pressure of arterial CO2: ' + str(param.p_paco2) + ' mmHg\n'
+                    msg += 'partial pressure of arterial CO2: ' + \
+                        str(param.p_paco2) + ' mmHg\n'
                 if param.p_pao2 != -1:
-                    msg += 'Partial pressure of arterial O2: ' + str(param.p_pao2) + ' mmHg\n'
+                    msg += 'Partial pressure of arterial O2: ' + \
+                        str(param.p_pao2) + ' mmHg\n'
                 if param.p_ph != -1:
                     msg += 'Arterial pH: ' + str(param.p_ph) + ' (0-14)\n'
                 if param.p_platelets != -1:
-                    msg += 'Platelets: ' + str(param.p_platelets) + ' cells/nL\n'
+                    msg += 'Platelets: ' + \
+                        str(param.p_platelets) + ' cells/nL\n'
                 if param.p_resprate != -1:
-                    msg += 'Respiration rate: ' + str(param.p_resprate) + ' bpm\n'
+                    msg += 'Respiration rate: ' + \
+                        str(param.p_resprate) + ' bpm\n'
                 if param.p_sao2 != -1:
-                    msg += 'O2 saturation in hemoglobin: ' + str(param.p_sao2) + ' %\n'
+                    msg += 'O2 saturation in hemoglobin: ' + \
+                        str(param.p_sao2) + ' %\n'
                 if param.p_sysabp != -1:
-                    msg += 'Invasive systolic arterial blood pressure: ' + str(param.p_sysabp) + ' mmHg\n'
+                    msg += 'Invasive systolic arterial blood pressure: ' + \
+                        str(param.p_sysabp) + ' mmHg\n'
                 if param.p_temp != -1:
                     msg += 'Temperature: ' + str(param.p_temp) + ' °C\n'
                 if param.p_tropl != -1:
@@ -262,27 +312,33 @@ def chat_reply():
                 if param.p_urine != -1:
                     msg += 'Urine output: ' + str(param.p_urine) + ' mL\n'
                 if param.p_wbc != -1:
-                    msg += 'White blood cell count: ' + str(param.p_wbc) + ' cells/nL\n'
+                    msg += 'White blood cell count: ' + \
+                        str(param.p_wbc) + ' cells/nL\n'
                 if param.p_weight != -1:
                     msg += 'Weight: ' + str(param.p_weight) + ' kg\n'
                 if param.p_height != -1:
                     msg += 'Height: ' + str(param.p_height) + ' cm\n'
 
                 if msg == '':
-                    resp.message("I'm afraid, nothing has been recorded yet :(")
+                    resp.message(
+                        "I'm afraid, nothing has been recorded yet :(")
                 else:
-                    resp.message("*Here's the current report you requested-*\n" + msg)
+                    resp.message(
+                        "*Here's the current report you requested-*\n" + msg)
             else:
                 json_res = ner_process(raw)
                 present = False
                 for item in json_res['data']:
                     present = True
                     if item['entity_value']['value']:
-                        resp.message("Here's the report from " + str(item['entity_value']['value']) + "\nhttps://care-wheel.herokuapp.com/user/" + user.username)
+                        resp.message("Here's the report from " + str(
+                            item['entity_value']['value']) + "\nhttps://care-wheel.herokuapp.com/user/" + user.username)
                 if present is False:
-                    resp.message("Here's the complete report you requested-\nhttps://care-wheel.herokuapp.com/user/" + user.username)
+                    resp.message(
+                        "Here's the complete report you requested-\nhttps://care-wheel.herokuapp.com/user/" + user.username)
         else:
-            resp.message("Sorry you are not registered as anyone's guardian yet! Please install our mobile app to get started :)")
+            resp.message(
+                "Sorry you are not registered as anyone's guardian yet! Please install our mobile app to get started :)")
     else:
         resp.message("I'm sorry! I couldn't get that")
 
@@ -294,9 +350,10 @@ def chat_reply():
 def assign_user(uuid):
     content = request.json
     if uuid != auth_token:
-        return jsonify({"output":"Access Denied!"})
+        return jsonify({"output": "Access Denied!"})
     else:
-        user = User(username=content['username'], fullname=content['fullname'], mobile=content['mobile'], publickey=content['publickey'], privatekey=content['privatekey'], guardianmobile=content['guardianmobile'])
+        user = User(username=content['username'], fullname=content['fullname'], mobile=content['mobile'],
+                    publickey=content['publickey'], privatekey=content['privatekey'], guardianmobile=content['guardianmobile'])
         if 'description' in content:
             user.description = content['description']
         if 'picture' in content:
@@ -304,18 +361,18 @@ def assign_user(uuid):
         db.session.add(user)
         db.session.commit()
         user = User.query.filter_by(username=content['username']).first()
-        update = Parameters(user_id = user.id)
+        update = Parameters(user_id=user.id)
         db.session.add(update)
         db.session.commit()
 
         message = client.messages \
-                    .create(
-                        from_='whatsapp:+14155238886',
-                        body="Welcome to Care Wheel. Now you're just a tap away from your loved ones <3\nYou can always rely on me for frequent updates ;)",
-                        to='whatsapp:' + user.mobile
-                    )
+            .create(
+                from_='whatsapp:+14155238886',
+                body="Welcome to Care Wheel. Now you're just a tap away from your loved ones <3\nYou can always rely on me for frequent updates ;)",
+                to='whatsapp:' + user.mobile
+            )
 
-        return jsonify({"output":"User successfully created!"})
+        return jsonify({"output": "User successfully created!"})
 
 # Required (username, fullname, privatekey)
 # Optional (description, picture)
@@ -323,69 +380,74 @@ def assign_user(uuid):
 def assign_supervisor(uuid):
     content = request.json
     if uuid != auth_token:
-        return jsonify({"output":"Access Denied!"})
+        return jsonify({"output": "Access Denied!"})
     else:
-        supervisor = Supervisor(username=content['username'], fullname=content['fullname'], userAssosiated=content['userAssosiated'], privatekey=content['privatekey'])
+        supervisor = Supervisor(username=content['username'], fullname=content['fullname'],
+                                userAssosiated=content['userAssosiated'], privatekey=content['privatekey'])
         if 'description' in content:
             supervisor.description = content['description']
         if 'picture' in content:
             supervisor.picture = content['picture']
         db.session.add(supervisor)
         db.session.commit()
-        return jsonify({"output":"Supervisor successfully created!"})
+        return jsonify({"output": "Supervisor successfully created!"})
 
 # Required (username, key, title, msg) optional (media)
 @app.route('/api/post_task/<uuid>', methods=['GET', 'POST'])
 def post_task(uuid):
     content = request.json
     if uuid != auth_token:
-        return jsonify({"output":"Access Denied!"})
+        return jsonify({"output": "Access Denied!"})
     else:
         user = User.query.filter_by(username=content['username']).first()
         if user:
             if user.publickey == content['key']:
-                post = Post(title=content['title'], content=content['msg'], user_id=user.id)
+                post = Post(title=content['title'],
+                            content=content['msg'], user_id=user.id)
                 db.session.add(post)
                 if content['title'] == ' ' or content['title'] == '':
                     msg = '*[updates]*' + '\n\n' + content['msg']
                 else:
-                    msg = '*[updates] ' + content['title'] + '*' + '\n\n' + content['msg']
+                    msg = '*[updates] ' + content['title'] + \
+                        '*' + '\n\n' + content['msg']
                 if 'media' in content:
                     post.media = content['media']
                     message = client.messages \
-                    .create(
-                        media_url=[content['media']],
-                        from_='whatsapp:+14155238886',
-                        body=msg,
-                        to='whatsapp:' + user.mobile
-                    )
+                        .create(
+                            media_url=[content['media']],
+                            from_='whatsapp:+14155238886',
+                            body=msg,
+                            to='whatsapp:' + user.mobile
+                        )
                 else:
                     message = client.messages \
-                    .create(
-                        from_='whatsapp:+14155238886',
-                        body=msg,
-                        to='whatsapp:' + user.mobile
-                    )
+                        .create(
+                            from_='whatsapp:+14155238886',
+                            body=msg,
+                            to='whatsapp:' + user.mobile
+                        )
                 db.session.commit()
-                return jsonify({"output":"Task successfully recorded!"})
+                return jsonify({"output": "Task successfully recorded!"})
             else:
-                return jsonify({"output":"User not authorized!"})
+                return jsonify({"output": "User not authorized!"})
         else:
-            return jsonify({"output":"User not found!"})
+            return jsonify({"output": "User not found!"})
 
 # required (username, rate - between [1 to 5]) optional (title, content)
 @app.route('/api/post_review/<uuid>', methods=['GET', 'POST'])
 def post_review(uuid):
     content = request.json
     if uuid != auth_token:
-        return jsonify({"output":"Access Denied!"})
+        return jsonify({"output": "Access Denied!"})
     else:
-        supervisor = Supervisor.query.filter_by(username=content['username']).first()
+        supervisor = Supervisor.query.filter_by(
+            username=content['username']).first()
         if supervisor:
             if content['rate'] > 5 or content['rate'] < 1:
-                return jsonify({"output":"Invalid input!"})
+                return jsonify({"output": "Invalid input!"})
             else:
-                review = Review(supervisor_id = supervisor.id, rate=content['rate'])
+                review = Review(supervisor_id=supervisor.id,
+                                rate=content['rate'])
                 if 'title' in content:
                     review.title = content['title']
                 if 'content' in content:
@@ -394,22 +456,22 @@ def post_review(uuid):
                 supervisor.totalRate = (supervisor.totalRate + review.rate) / 2
                 supervisor.totalCount = supervisor.totalCount + 1
                 db.session.commit()
-                return jsonify({"output":"Review successfully posted!"})
+                return jsonify({"output": "Review successfully posted!"})
         else:
-            return jsonify({"output":"User not authorized!"})
+            return jsonify({"output": "User not authorized!"})
 
 # required (username, key) optional (key value pair of properties)
 @app.route('/api/post_update/<uuid>', methods=['GET', 'POST'])
 def post_update(uuid):
     content = request.json
     if uuid != auth_token:
-        return jsonify({"output":"Access Denied!"})
+        return jsonify({"output": "Access Denied!"})
     else:
         user = User.query.filter_by(username=content['username']).first()
         if user:
             if user.publickey == content['key']:
                 param = user.parameters[len(user.parameters)-1]
-                update = Parameters(user_id = user.id)
+                update = Parameters(user_id=user.id)
                 update.p_albumin = param.p_albumin
                 update.p_alp = param.p_alp
                 update.p_alt = param.p_alt
@@ -534,11 +596,11 @@ def post_update(uuid):
                         update.p_long = value
                 db.session.add(update)
                 db.session.commit()
-                return jsonify({"output":"Post updated successfully!"})
+                return jsonify({"output": "Post updated successfully!"})
             else:
-                return jsonify({"output":"User not authorized!"})
+                return jsonify({"output": "User not authorized!"})
         else:
-            return jsonify({"output":"User not found!"})
+            return jsonify({"output": "User not found!"})
 
 
 # Frontend part
@@ -549,9 +611,10 @@ def user(_username):
         param = user.parameters[len(user.parameters)-1]
         _posts = user.posts
         return render_template('user_profile.html', username=_username, name=user.fullname, desc=user.description, mobile=user.mobile,
-            gmobile=user.guardianmobile, pic=user.picture, recovery=user.recovery, mood=user.mood, parameter=param, posts=_posts)
+                               gmobile=user.guardianmobile, pic=user.picture, recovery=user.recovery, mood=user.mood, parameter=param, posts=_posts)
     else:
         return 'User not found!'
+
 
 @app.route("/caretaker/<string:_username>")
 def caretaker(_username):
@@ -559,9 +622,10 @@ def caretaker(_username):
     if caretaker:
         _reviews = caretaker.reviews
         return render_template('user_caretaker.html', username=_username, name=caretaker.fullname, desc=caretaker.description, pic=caretaker.picture,
-            reviews = _reviews, totalRate=caretaker.totalRate, totalCount=caretaker.totalCount)
+                               reviews=_reviews, totalRate=caretaker.totalRate, totalCount=caretaker.totalCount)
     else:
         return 'Caretaker not found!'
+
 
 @app.route("/dashboard/<string:_username>")
 def dashboard(_username):
@@ -573,4 +637,4 @@ def dashboard(_username):
 
 
 if __name__ == "__main__":
-    app.run(host= '127.0.0.1', debug=True)
+    app.run(host='127.0.0.1', debug=True)
