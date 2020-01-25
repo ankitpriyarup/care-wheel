@@ -26,11 +26,11 @@ cd docker && \
 docker-compose up --build -d && \
 cd ../../../
 
-# Finally Execute the programm
+# Finally Execute the programm, uncomment first time run lines from app.py
 python3 app.py
 
 # In new terminal, deploy to home server, by exposing local port (install ngrok & cd to that directory)
-$ ./ngrok http 5000
+./ngrok http 5000
 
 # Setup Twilio for whatsapp messaging, open my https://www.twilio.com/ account
 # (email: ankitpriyarup@gmail.com password:CareWheelProject)
@@ -38,11 +38,11 @@ $ ./ngrok http 5000
 # Finally set WHEN A MESSAGE COMES IN to the ngrok address you recieved before
 
 # (Optional) To reset database
-$ rm -rf site.db
-$ python3
-$ from app import db
-$ db.create_all()
-$ python3 test.py
+rm -rf site.db
+python3
+from app import db
+db.create_all()
+python3 test.py
 ```
 
 # API

@@ -4,7 +4,12 @@ from twilio.twiml.messaging_response import MessagingResponse
 from twilio.rest import Client
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
-import random, string, os, json
+from nltk.corpus import stopwords 
+from nltk.tokenize import word_tokenize
+import random, string, os, json, nltk
+
+# For first time run
+# nltk.download('stopwords')
 
 app = Flask(__name__, static_url_path='')
 api = Api(app)
@@ -117,20 +122,39 @@ class Parameters(db.Model):
     def __repr__(self):
         return f"Parameter('{self.user_id}', '{self.date_posted}')"
 
-GREETING_INPUTS = ("hello", "hi", "greetings", "sup", "what's up","hey",)
+GREETING_INPUTS = ("hello", "helloo", "hellooo", "helloooo", "hi", "hii", "hiii", "hiiii", "greetings", "sup", "what's up", "hey", "heyy", "heyyy", "heyyyy", "heyyyyy", "namaste", "hello ji")
 GREETING_RESPONSES = ["hi", "hey", "*nods*", "hi there", "hello", "I'm here to help"]
-COMMON_INPUTS = ("thanks", "good", "great", "perfect", "thank you",)
+COMMON_INPUTS = ("thanks", "thankss", "thanksss", "thankssss", "good", "goood", "gooood", "great", "perfect", "thank you", "thank youu", "thank youuu", "dhanyawaad", "shukriyaa")
 COMMON_RESPONSES = [":)", "Glad to hear that!", ":D"]
-REPORT = ("show", "statistics", "data", "report", "analysis", "status",)
-CURRENT = ("current", "recent", "now", "live",)
+REPORT = ("show", "statistics", "data", "report", "analysis", "status")
+CURRENT = ("cur", "current", "recent", "now", "live", "abhi", "abhi", "turant wali", "turant", "eesi waqt")
 def match_sentence_resp(sentence, match_inp, match_out):
-    for word in sentence.split():
-        if word.lower() in match_inp:
-            return random.choice(match_out)
+    return random.choice(match_out)
+
 def match_sentence(sentence, match_inp):
-    for word in sentence.split():
-        if word.lower() in match_inp:
-            return True
+    score = 0.0
+    for word in match_inp:
+        X_list = word_tokenize(sentence.lower())
+        Y_list = word_tokenize(word.lower())
+        sw = stopwords.words('english')  
+        l1 =[];l2 =[]
+        X_set = {w for w in X_list if not w in sw}
+        Y_set = {w for w in Y_list if not w in sw}
+        rvector = X_set.union(Y_set)
+        for w in rvector:
+            if w in X_set: l1.append(1)
+            else: l1.append(0)
+            if w in Y_set: l2.append(1)
+            else: l2.append(0)
+        c = 0
+        for i in range(len(rvector)): 
+            c+= l1[i]*l2[i] 
+        den = float((sum(l1)*sum(l2))**0.5)
+        if den != 0:
+            cosine = c / den
+            score = score + cosine
+    return score > 0.3
+
 def ner_process(sentence):
     open('commands/_i', 'w').close()
     f = open("commands/_i", "a")
