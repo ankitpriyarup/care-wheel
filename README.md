@@ -42,7 +42,7 @@ rm -rf site.db
 python3
 from app import db
 db.create_all()
-python3 test.py
+python3 test/db.py
 ```
 
 # API
@@ -62,6 +62,9 @@ TODO
 - Dashboard remind medicine not implemented yet
 - Implement post creation feature from dashboard
 - Implement more features at dashboard side
+- Implement update_statistics_shell script
+- Implement update_sentiments shell script
+- Implement update_ml shell script
 
 # License
 Entire project is distributed under the terms of the MIT license, as described in the LICENSE.md file. All rights goes to TechnoNerdz as a part of it's SIH 2020 submission
