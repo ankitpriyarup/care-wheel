@@ -596,6 +596,8 @@ def post_update(uuid):
                         update.p_long = value
                 db.session.add(update)
                 db.session.commit()
+                print("Post Updated successfully")
+                print(param)
                 return jsonify({"output": "Post updated successfully!"})
             else:
                 return jsonify({"output": "User not authorized!"})
