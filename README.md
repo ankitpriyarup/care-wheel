@@ -19,14 +19,14 @@ mkdir external && \
 cd external && \
 git clone https://github.com/hellohaptik/chatbot_ner.git && \
 cd chatbot_ner && \
-pip3 install -r requirements.txt && \
 cp config.example .env && \
 cp .env docker/.env && \
 cd docker && \
 docker-compose up --build -d && \
 cd ../../../
 
-# Finally Execute the programm, uncomment first time run lines from app.py
+# nltk.download('stopwords')
+# Finally Execute the programm
 python3 app.py
 
 # In new terminal, deploy to home server, by exposing local port (install ngrok & cd to that directory)

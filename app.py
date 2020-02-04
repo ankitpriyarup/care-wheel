@@ -12,9 +12,6 @@ import os
 import json
 import nltk
 
-# For first time run
-# nltk.download('stopwords')
-
 app = Flask(__name__, static_url_path='')
 api = Api(app)
 account_sid = 'ACc81bc8dfc81a1536208ee34d767cf048'
