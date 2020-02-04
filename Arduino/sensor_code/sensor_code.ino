@@ -41,7 +41,9 @@ void setup()
 
   pinMode(led_pin,OUTPUT);  
   pinMode(trigPin, OUTPUT);
-  pinMode(echoPin, INPUT);      
+  pinMode(echoPin, INPUT);    
+  pinMode(12, OUTPUT);  
+  pinMode(7, INPUT);
 
   Serial.begin(115200);           
 
@@ -66,8 +68,22 @@ void loop()
 
       duration = pulseIn(echoPin, HIGH);
       distance = (duration*.0343)/2;
+      if(distance<10){
+        digitalWrite(12, HIGH);  
+      }else{
+        digitalWrite(12, LOW);
+      }
       Serial.print("Distance: ");
       Serial.println(distance);
+      int d = digitalRead(7);
+      if(d){
+        Serial.println("NO DANGER");
+      }else{
+        Serial.println("DANGER!");
+        digitalWrite(12, HIGH);        
+      }
+
+      
 
       delay(200); //  take a break
 
