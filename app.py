@@ -87,6 +87,7 @@ class Post(db.Model):
 
 class Parameters(db.Model):
     p_albumin = db.Column(db.Float, unique=False, nullable=True, default=-1)
+    p_dist = db.Column(db.Float, unique=False, nullable=True, default=-1)
     p_alp = db.Column(db.Float, unique=False, nullable=True, default=-1)
     p_alt = db.Column(db.Float, unique=False, nullable=True, default=-1)
     p_ast = db.Column(db.Float, unique=False, nullable=True, default=-1)
@@ -222,6 +223,8 @@ def chat_reply():
             if (match_sentence(raw, CURRENT)):
                 param = user.parameters[len(user.parameters)-1]
                 msg = ''
+                if param.p_dist != -1:
+                    msg += 'Ultrasonic Distance: ' + str(param.p_dist)
                 if param.p_albumin != -1:
                     msg += 'Albumin: ' + str(param.p_albumin) + ' g/dL\n'
                 if param.p_alp != -1:
@@ -430,6 +433,16 @@ def post_task(uuid):
         else:
             return jsonify({"output": "User not found!"})
 
+@app.route('/api/post_msg/<content>', methods=['GET', 'POST'])
+def send_msg(content):
+    print("SENDING")
+    message = client.messages \
+            .create(
+                from_='whatsapp:+14155238886',
+                body=content,
+                to='whatsapp:+919818865785'
+            )
+
 # required (username, rate - between [1 to 5]) optional (title, content)
 @app.route('/api/post_review/<uuid>', methods=['GET', 'POST'])
 def post_review(uuid):
@@ -470,6 +483,7 @@ def post_update(uuid):
                 param = user.parameters[len(user.parameters)-1]
                 update = Parameters(user_id=user.id)
                 update.p_albumin = param.p_albumin
+                update.p_dist = param.p_dist
                 update.p_alp = param.p_alp
                 update.p_alt = param.p_alt
                 update.p_ast = param.p_ast
@@ -511,6 +525,8 @@ def post_update(uuid):
                 update.p_long = param.p_long
 
                 for key, value in content.items():
+                    if key == 'distance':
+                        update.p_dist = value
                     if key == 'albumin':
                         update.p_albumin = value
                     if key == 'alp':
