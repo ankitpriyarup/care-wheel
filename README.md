@@ -54,7 +54,6 @@ TODO
 - Generalize bunch of redundant, duplicate code
 - Improve natural language skills and simmilarity matching method
 - Add more non-health parameters currently only location based (latitude & longitude are there)
-- Timer value graph in user profile is hardcoded for now LOL XD, make it render real time through database
 - Add login & registeration frontend support, make full-blown website
 - Upgrade supervisor role, supervisor's should have custom profile page with comments and ratings support
 - Create caretaker review system more robust by adding parameter for the person who posted review, checking constraints to avoid multiple review by someone to certain profile
@@ -67,4 +66,4 @@ TODO
 - Implement update_ml shell script
 
 # License
-Entire project is distributed under the terms of the MIT license, as described in the LICENSE.md file. All rights goes to TechnoNerdz as a part of it's SIH 2020 submission
+Entire project is distributed under the terms of the MIT license, as described in the LICENSE.md file. All rights goes to TechnoNerdz
